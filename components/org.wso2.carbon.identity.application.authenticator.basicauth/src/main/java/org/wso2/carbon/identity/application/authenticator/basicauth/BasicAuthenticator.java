@@ -58,6 +58,7 @@ public class BasicAuthenticator extends AbstractApplicationAuthenticator
 
     private static final long serialVersionUID = 1819664539416029785L;
     private static final String PASSWORD_PROPERTY = "PASSWORD_PROPERTY";
+    private static final String PASSWORD_RESET_ENDPOINT = "accountrecoveryendpoint/confirmrecovery.do?";
     private static final Log log = LogFactory.getLog(BasicAuthenticator.class);
 
     @Override
@@ -100,6 +101,7 @@ public class BasicAuthenticator extends AbstractApplicationAuthenticator
         String retryPage = ConfigurationFacade.getInstance().getAuthenticationEndpointRetryURL();
         String queryParams = context.getContextIdIncludedQueryParams();
         String password = (String) context.getProperty(PASSWORD_PROPERTY);
+        context.getProperties().remove(PASSWORD_PROPERTY);
 
         try {
             String retryParam = "";
@@ -131,7 +133,7 @@ public class BasicAuthenticator extends AbstractApplicationAuthenticator
                                          + BasicAuthenticatorConstants.AUTHENTICATORS + getName() + ":" + BasicAuthenticatorConstants.LOCAL + retryParam;
                     response.sendRedirect(redirectURL);
 
-                }else if (errorCode.equals(IdentityCoreConstants.ADMIN_FORCED_USER_PASSWORD_RESET_VIA_EMAIL_LINK_ERROR_CODE)) {
+                } else if (errorCode.equals(IdentityCoreConstants.ADMIN_FORCED_USER_PASSWORD_RESET_VIA_EMAIL_LINK_ERROR_CODE)) {
                     retryParam = "&authFailure=true&authFailureMsg=password.reset.pending";
                     String redirectURL = response.encodeRedirectURL(loginPage + ("?" + queryParams)) +
                             BasicAuthenticatorConstants.FAILED_USERNAME + URLEncoder.encode(request.getParameter(
@@ -139,13 +141,13 @@ public class BasicAuthenticator extends AbstractApplicationAuthenticator
                             + BasicAuthenticatorConstants.AUTHENTICATORS + getName() + ":" + BasicAuthenticatorConstants.LOCAL + retryParam;
                     response.sendRedirect(redirectURL);
 
-                }else if (errorCode.equals(IdentityCoreConstants.ADMIN_FORCED_USER_PASSWORD_RESET_VIA_OTP_ERROR_CODE)) {
-                    String username= request.getParameter(BasicAuthenticatorConstants.USER_NAME);
+                } else if (errorCode.equals(IdentityCoreConstants.ADMIN_FORCED_USER_PASSWORD_RESET_VIA_OTP_ERROR_CODE)) {
+                    String username = request.getParameter(BasicAuthenticatorConstants.USER_NAME);
 
-                    String redirectURL = response.encodeRedirectURL( ("accountrecoveryendpoint/confirmrecovery.do?" + queryParams)) + BasicAuthenticatorConstants.USER_NAME +"="+ URLEncoder.encode(username)+ "&confirmation="+password;
+                    String redirectURL = response.encodeRedirectURL((PASSWORD_RESET_ENDPOINT + queryParams)) + BasicAuthenticatorConstants.USER_NAME + "=" + URLEncoder.encode(username) + "&confirmation=" + password;
                     response.sendRedirect(redirectURL);
 
-                }else if (showAuthFailureReason != null && "true".equals(showAuthFailureReason)) {
+                } else if (showAuthFailureReason != null && "true".equals(showAuthFailureReason)) {
 
 
                     int remainingAttempts =
